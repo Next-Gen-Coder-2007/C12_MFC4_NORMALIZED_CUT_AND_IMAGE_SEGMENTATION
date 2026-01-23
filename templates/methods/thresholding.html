@@ -1,0 +1,462 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Thresholding Segmentation</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.15.3/katex.min.css"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.15.3/katex.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.15.3/contrib/auto-render.min.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", sans-serif;
+        background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+        min-height: 100vh;
+        padding: 20px;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: auto;
+      }
+
+      .back-btn {
+        display: inline-block;
+        margin-bottom: 20px;
+        padding: 10px 22px;
+        background: white;
+        color: #0288d1;
+        border-radius: 25px;
+        text-decoration: none;
+        font-weight: 600;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      }
+
+      .content-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 25px;
+        margin-bottom: 25px;
+      }
+
+      .card {
+        background: white;
+        border-radius: 15px;
+        padding: 30px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+      }
+
+      h1,
+      h2 {
+        color: #0277bd;
+        margin-bottom: 15px;
+      }
+
+      h3 {
+        color: #039be5;
+        margin-top: 20px;
+      }
+
+      p,
+      li {
+        color: #444;
+        line-height: 1.8;
+        margin-bottom: 12px;
+      }
+
+      ul,
+      ol {
+        margin-left: 25px;
+      }
+
+      .formula-box {
+        background: #f4faff;
+        border-left: 5px solid #03a9f4;
+        padding: 18px;
+        margin: 18px 0;
+        border-radius: 6px;
+      }
+
+      .upload-section {
+        background: white;
+        margin-top: 30px;
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+      }
+
+      .file-input-label {
+        display: block;
+        padding: 35px;
+        border: 3px dashed #03a9f4;
+        text-align: center;
+        border-radius: 10px;
+        cursor: pointer;
+        margin-bottom: 20px;
+        background: #f8fcff;
+      }
+
+      input[type="file"] {
+        display: none;
+      }
+
+      .process-btn {
+        width: 100%;
+        padding: 15px;
+        background: linear-gradient(135deg, #03a9f4, #0288d1);
+        color: white;
+        border: none;
+        border-radius: 30px;
+        font-size: 18px;
+        font-weight: 600;
+        cursor: pointer;
+      }
+
+      .results {
+        display: none;
+        margin-top: 25px;
+        grid-template-columns: 1fr 1fr;
+        gap: 25px;
+      }
+
+      .results.show {
+        display: grid;
+      }
+
+      img {
+        width: 100%;
+        border-radius: 10px;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+      }
+
+      .upload-section {
+        background: white;
+        border-radius: 15px;
+        padding: 30px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      }
+
+      .upload-section h2 {
+        color: #0288d1;
+        margin-bottom: 20px;
+      }
+
+      .file-input-wrapper {
+        position: relative;
+        display: inline-block;
+        width: 100%;
+        margin-bottom: 20px;
+      }
+
+      .file-input-wrapper input[type="file"] {
+        position: absolute;
+        opacity: 0;
+        width: 100%;
+        height: 100%;
+        cursor: pointer;
+      }
+
+      .file-input-label {
+        display: block;
+        padding: 40px;
+        background: #f8f9fa;
+        border: 3px dashed #0288d1;
+        border-radius: 10px;
+        text-align: center;
+        cursor: pointer;
+        transition: background 0.3s;
+      }
+
+      .file-input-label:hover {
+        background: #e9ecef;
+      }
+
+      .param-group {
+        margin-bottom: 20px;
+      }
+
+      .param-group label {
+        display: block;
+        color: #667eea;
+        font-weight: 600;
+        margin-bottom: 8px;
+      }
+
+      .param-group input {
+        width: 100%;
+        padding: 10px;
+        border: 2px solid #e0e0e0;
+        border-radius: 5px;
+        font-size: 16px;
+      }
+
+      .process-btn {
+        width: 100%;
+        padding: 15px;
+        background: linear-gradient(135deg, #667eea 0%, #0288d1 100%);
+        color: white;
+        border: none;
+        border-radius: 25px;
+        font-size: 18px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: opacity 0.3s;
+      }
+
+      .process-btn:hover {
+        opacity: 0.9;
+      }
+
+      .results {
+        display: none;
+        grid-template-columns: 1fr 1fr;
+        gap: 25px;
+        margin-top: 25px;
+      }
+
+      .results.show {
+        display: grid;
+      }
+
+      .result-img {
+        width: 100%;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+      }
+
+      .loading {
+        display: none;
+        text-align: center;
+        padding: 20px;
+        color: #0288d1;
+        font-size: 18px;
+      }
+
+      .loading.show {
+        display: block;
+      }
+
+      @media (max-width: 968px) {
+        .content-grid,
+        .results {
+          grid-template-columns: 1fr;
+        }
+      }
+      @media (max-width: 480px) {
+        body {
+          padding: 10px;
+        }
+        .back-btn {
+          padding: 8px 16px;
+          font-size: 14px;
+        }
+        h1 {
+          font-size: 1.6em;
+        }
+        h2 {
+          font-size: 1.3em;
+        }
+        h3 {
+          font-size: 1.1em;
+        }
+        .card {
+          padding: 15px;
+        }
+        .process-btn {
+          font-size: 15px;
+          padding: 10px;
+        }
+        .file-input-label {
+          padding: 20px;
+          font-size: 14px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <a href="/" class="back-btn">← Back to Home</a>
+      <div class="content-grid">
+        <div class="card">
+          <h1>Thresholding Segmentation</h1>
+          <h2>Mathematical Formulation</h2>
+          <h3>1. Binary Thresholding</h3>
+          <div class="formula-box">
+            $$g(x,y)=\begin{cases}1,& f(x,y)>T\\0,& f(x,y)\le T\end{cases}$$
+          </div>
+          <p>
+            f(x,y) = pixel intensity, g(x,y) = segmented output, T = threshold
+            value.
+          </p>
+
+          <h3>2. Otsu's Method</h3>
+          <p>Optimal threshold maximizes between-class variance:</p>
+          <div class="formula-box">
+            $$\sigma_B^2(T) = \omega_0(T)\omega_1(T)[\mu_0(T)-\mu_1(T)]^2$$
+          </div>
+          <p>ω₀, ω₁ = class probabilities; μ₀, μ₁ = class means.</p>
+
+          <h3>3. Class Probabilities</h3>
+          <div class="formula-box">
+            $$\omega_0(T)=\sum_{i=0}^{T} p(i),\quad
+            \omega_1(T)=\sum_{i=T+1}^{L-1} p(i)$$
+          </div>
+
+          <h3>4. Class Means</h3>
+          <div class="formula-box">
+            $$\mu_0(T)=\frac{\sum_{i=0}^{T} i \cdot p(i)}{\omega_0(T)},\quad
+            \mu_1(T)=\frac{\sum_{i=T+1}^{L-1} i \cdot p(i)}{\omega_1(T)}$$
+          </div>
+
+          <h3>5. Optimal Threshold</h3>
+          <div class="formula-box">$$T^*=\arg\max_T \sigma_B^2(T)$$</div>
+
+          <h3>6. Multi-Level Thresholding</h3>
+          <div class="formula-box">
+            $$ g(x,y) = \begin{cases} 0, & \text{if } f(x,y) \le T_1 \\ 1, &
+            \text{if } T_1 < f(x,y) \le T_2 \\ \vdots & \\ n, & \text{if }
+            f(x,y) > T_n \end{cases} $$
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Workflow</h2>
+          <ol>
+            <li>Convert the image to grayscale (if it is colored).</li>
+            <li>Compute histogram and class probabilities p(i).</li>
+            <li>Choose threshold manually or use Otsu's method.</li>
+            <li>Assign pixels using the binary function g(x,y).</li>
+            <li>
+              Apply multi-level thresholding for multiple classes if required.
+            </li>
+            <li>Optional: Apply morphological operations for noise removal.</li>
+          </ol>
+        </div>
+      </div>
+      <div class="upload-section">
+        <h2>Try Thresholding Segmentation</h2>
+        <form id="uploadForm" enctype="multipart/form-data">
+          <div class="file-input-wrapper">
+            <input
+              type="file"
+              id="imageInput"
+              name="image"
+              accept="image/*"
+              required
+            />
+            <label for="imageInput" class="file-input-label">
+              <p style="font-size: 18px; color: #0288d1">
+                Click to select an image
+              </p>
+              <p id="fileName" style="color: #999; margin-top: 10px">
+                No file selected
+              </p>
+            </label>
+          </div>
+
+          <div class="param-group">
+            <label for="threshold" style="color: #0288d1">
+              Threshold Value: <span id="thresholdDisplay">128</span>
+            </label>
+            <input
+              type="range"
+              id="threshold"
+              name="threshold"
+              min="0"
+              max="255"
+              value="128"
+              oninput="
+                document.getElementById('thresholdDisplay').textContent =
+                  this.value
+              "
+            />
+          </div>
+
+          <button type="submit" class="process-btn">Process Image</button>
+        </form>
+
+        <div class="loading" id="loading">
+          <p>Processing... Please wait</p>
+        </div>
+
+        <div class="results" id="results">
+          <div class="card">
+            <h3>Original Image</h3>
+            <img id="originalImg" class="result-img" alt="Original" />
+          </div>
+          <div class="card">
+            <h3>Thresholded Result</h3>
+            <img id="resultImg" class="result-img" alt="Result" />
+          </div>
+        </div>
+      </div>
+    </div>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        renderMathInElement(document.body, {
+          delimiters: [
+            { left: "$$", right: "$$", display: true },
+            { left: "$", right: "$", display: false },
+          ],
+        });
+      });
+
+      document
+        .getElementById("imageInput")
+        .addEventListener("change", function (e) {
+          const fileName = e.target.files[0]?.name || "No file selected";
+          document.getElementById("fileName").textContent = fileName;
+        });
+
+      document
+        .getElementById("uploadForm")
+        .addEventListener("submit", async function (e) {
+          e.preventDefault();
+
+          const formData = new FormData();
+          formData.append(
+            "image",
+            document.getElementById("imageInput").files[0],
+          );
+          formData.append("method", "thresholding");
+          formData.append(
+            "threshold",
+            document.getElementById("threshold").value,
+          );
+
+          document.getElementById("loading").classList.add("show");
+          document.getElementById("results").classList.remove("show");
+
+          try {
+            const response = await fetch("/process", {
+              method: "POST",
+              body: formData,
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+              document.getElementById("originalImg").src = data.input_image;
+              document.getElementById("resultImg").src = data.result_image;
+              document.getElementById("results").classList.add("show");
+            } else {
+              alert("Error: " + data.error);
+            }
+          } catch (error) {
+            alert("Error processing image: " + error.message);
+          } finally {
+            document.getElementById("loading").classList.remove("show");
+          }
+        });
+    </script>
+  </body>
+</html>

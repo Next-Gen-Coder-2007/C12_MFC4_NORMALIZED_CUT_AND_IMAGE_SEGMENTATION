@@ -1,0 +1,420 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>K-Means Image Segmentation</title>
+
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.15.3/katex.min.css"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.15.3/katex.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.15.3/contrib/auto-render.min.js"></script>
+
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", sans-serif;
+        background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+        min-height: 100vh;
+        padding: 20px;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: auto;
+      }
+
+      .back-btn {
+        display: inline-block;
+        margin-bottom: 20px;
+        padding: 10px 22px;
+        background: white;
+        color: #0288d1;
+        border-radius: 25px;
+        text-decoration: none;
+        font-weight: 600;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      }
+
+      .content-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 25px;
+      }
+
+      .card {
+        background: white;
+        border-radius: 15px;
+        padding: 30px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+      }
+
+      h1,
+      h2 {
+        color: #0277bd;
+        margin-bottom: 15px;
+      }
+      h3 {
+        color: #039be5;
+        margin-top: 20px;
+      }
+
+      p,
+      li {
+        color: #444;
+        line-height: 1.8;
+        margin-bottom: 12px;
+      }
+
+      ul,
+      ol {
+        margin-left: 25px;
+      }
+
+      .formula-box {
+        background: #f4faff;
+        border-left: 5px solid #03a9f4;
+        padding: 18px;
+        margin: 18px 0;
+        border-radius: 6px;
+      }
+
+      .upload-section {
+        background: white;
+        margin-top: 30px;
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+      }
+
+      .file-input-label {
+        display: block;
+        padding: 35px;
+        border: 3px dashed #03a9f4;
+        text-align: center;
+        border-radius: 10px;
+        cursor: pointer;
+        margin-bottom: 20px;
+        background: #f8fcff;
+      }
+
+      .param-group {
+        margin-bottom: 20px;
+      }
+
+      .param-group label {
+        display: block;
+        color: #667eea;
+        font-weight: 600;
+        margin-bottom: 8px;
+      }
+
+      .param-group input {
+        width: 100%;
+        padding: 10px;
+        border: 2px solid #e0e0e0;
+        border-radius: 5px;
+        font-size: 16px;
+      }
+
+      input[type="file"] {
+        display: none;
+      }
+
+      .process-btn {
+        width: 100%;
+        padding: 15px;
+        background: linear-gradient(135deg, #03a9f4, #0288d1);
+        color: white;
+        border: none;
+        border-radius: 30px;
+        font-size: 18px;
+        font-weight: 600;
+        cursor: pointer;
+      }
+
+      .results {
+        display: none;
+        margin-top: 25px;
+        grid-template-columns: 1fr 1fr;
+        gap: 25px;
+      }
+
+      .results.show {
+        display: grid;
+      }
+
+      img {
+        width: 100%;
+        border-radius: 10px;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+      }
+
+      .result-img {
+        width: 100%;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+      }
+
+      .loading {
+        display: none;
+        text-align: center;
+        padding: 20px;
+        color: #667eea;
+        font-size: 18px;
+      }
+
+      .loading.show {
+        display: block;
+      }
+
+      @media (max-width: 900px) {
+        .content-grid,
+        .results {
+          grid-template-columns: 1fr;
+        }
+      }
+      @media (max-width: 480px) {
+        body {
+          padding: 10px;
+        }
+        .back-btn {
+          padding: 8px 16px;
+          font-size: 14px;
+        }
+        h1 {
+          font-size: 1.6em;
+        }
+        h2 {
+          font-size: 1.3em;
+        }
+        h3 {
+          font-size: 1.1em;
+        }
+        .card {
+          padding: 15px;
+        }
+        .process-btn {
+          font-size: 15px;
+          padding: 10px;
+        }
+        .file-input-label {
+          padding: 20px;
+          font-size: 14px;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <a href="/" class="back-btn">← Back to Home</a>
+
+      <div class="content-grid">
+        <div class="card">
+          <h1>K-Means Image Segmentation</h1>
+
+          <h2>Mathematical Representation</h2>
+          <p>
+            Let an image contain N pixels. Each pixel is represented as a
+            feature vector:
+          </p>
+
+          <div class="formula-box">$$x_i = [R_i, G_i, B_i]^T$$</div>
+
+          <p>The image is transformed into a dataset:</p>
+
+          <div class="formula-box">
+            $$X = \{x_1, x_2, ..., x_N\}, \quad x_i \in \mathbb{R}^3$$
+          </div>
+
+          <h2>Objective Function</h2>
+
+          <p>
+            K-Means partitions pixels into K clusters by minimizing
+            intra-cluster variance:
+          </p>
+
+          <div class="formula-box">
+            $$J = \sum_{k=1}^{K} \sum_{x_i \in C_k} \|x_i - \mu_k\|^2$$
+          </div>
+
+          <p>where μ<sub>k</sub> is the centroid of cluster k.</p>
+
+          <h2>Distance Computation</h2>
+
+          <div class="formula-box">
+            $$d(x_i,\mu_k) = \sqrt{(R_i-R_k)^2+(G_i-G_k)^2+(B_i-B_k)^2}$$
+          </div>
+
+          <h2>Assignment Rule</h2>
+
+          <div class="formula-box">
+            $$C_k = \{x_i : \|x_i-\mu_k\| \le \|x_i-\mu_j\|,\ \forall j\}$$
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Centroid Update</h2>
+
+          <div class="formula-box">
+            $$\mu_k = \frac{1}{|C_k|}\sum_{x_i \in C_k} x_i$$
+          </div>
+
+          <h2>Iterative Optimization</h2>
+
+          <p>
+            K-Means alternates between assignment and update steps. Each
+            iteration monotonically reduces the objective function:
+          </p>
+
+          <div class="formula-box">$$J^{(t+1)} \le J^{(t)}$$</div>
+
+          <h2>Convergence Condition</h2>
+
+          <div class="formula-box">
+            $$\|\mu_k^{(t+1)} - \mu_k^{(t)}\| < \epsilon$$
+          </div>
+
+          <h2>Final Segmentation</h2>
+
+          <p>After convergence, each pixel is labeled by its cluster index:</p>
+
+          <div class="formula-box">$$\text{label}(x_i) = k$$</div>
+
+          <p>
+            The segmented image is obtained by replacing each pixel with its
+            centroid color:
+          </p>
+
+          <div class="formula-box">$$x_i^{seg} = \mu_{\text{label}(x_i)}$$</div>
+
+          <h2>Complete Workflow</h2>
+          <ol>
+            <li>Convert image to pixel feature vectors</li>
+            <li>Initialize K centroids</li>
+            <li>Compute distance between pixels and centroids</li>
+            <li>Assign pixels to nearest centroid</li>
+            <li>Update centroids using mean operation</li>
+            <li>Repeat until convergence</li>
+            <li>Form segmented image using cluster labels</li>
+          </ol>
+        </div>
+      </div>
+      <div class="upload-section">
+        <h2>Try K-Means Segmentation</h2>
+        <form id="uploadForm" enctype="multipart/form-data">
+          <div class="file-input-wrapper">
+            <input
+              type="file"
+              id="imageInput"
+              name="image"
+              accept="image/*"
+              required
+            />
+            <label for="imageInput" class="file-input-label">
+              <p style="font-size: 18px; color: #667eea">
+                Click to select an image
+              </p>
+              <p id="fileName" style="color: #999; margin-top: 10px">
+                No file selected
+              </p>
+            </label>
+          </div>
+          <div class="param-group">
+            <label for="kValue"
+              >Number of Clusters (K): <span id="kDisplay">3</span></label
+            >
+            <input
+              type="range"
+              id="kValue"
+              name="k"
+              min="2"
+              max="10"
+              value="3"
+              oninput="
+                document.getElementById('kDisplay').textContent = this.value
+              "
+            />
+          </div>
+          <button type="submit" class="process-btn">Process Image</button>
+        </form>
+        <div class="loading" id="loading">
+          <p>Processing... Please wait ⏳</p>
+        </div>
+        <div class="results" id="results">
+          <div class="card">
+            <h3>Original Image</h3>
+            <img id="originalImg" class="result-img" alt="Original" />
+          </div>
+          <div class="card">
+            <h3>K-Means Result</h3>
+            <img id="resultImg" class="result-img" alt="Result" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        renderMathInElement(document.body, {
+          delimiters: [
+            { left: "$$", right: "$$", display: true },
+            { left: "$", right: "$", display: false },
+          ],
+        });
+      });
+      document
+        .getElementById("imageInput")
+        .addEventListener("change", function (e) {
+          const fileName = e.target.files[0]?.name || "No file selected";
+          document.getElementById("fileName").textContent = fileName;
+        });
+
+      document
+        .getElementById("uploadForm")
+        .addEventListener("submit", async function (e) {
+          e.preventDefault();
+
+          const formData = new FormData();
+          formData.append(
+            "image",
+            document.getElementById("imageInput").files[0],
+          );
+          formData.append("method", "kmeans");
+          formData.append("k", document.getElementById("kValue").value);
+
+          document.getElementById("loading").classList.add("show");
+          document.getElementById("results").classList.remove("show");
+
+          try {
+            const response = await fetch("/process", {
+              method: "POST",
+              body: formData,
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+              document.getElementById("originalImg").src = data.input_image;
+              document.getElementById("resultImg").src = data.result_image;
+              document.getElementById("results").classList.add("show");
+            } else {
+              alert("Error: " + data.error);
+            }
+          } catch (error) {
+            alert("Error processing image: " + error.message);
+          } finally {
+            document.getElementById("loading").classList.remove("show");
+          }
+        });
+    </script>
+  </body>
+</html>

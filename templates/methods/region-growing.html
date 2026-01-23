@@ -1,0 +1,412 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Region Growing Segmentation</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.15.3/katex.min.css"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.15.3/katex.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.15.3/contrib/auto-render.min.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+        min-height: 100vh;
+        padding: 20px;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+
+      .back-btn {
+        display: inline-block;
+        margin-bottom: 20px;
+        padding: 10px 22px;
+        background: white;
+        color: #0288d1;
+        border-radius: 25px;
+        text-decoration: none;
+        font-weight: 600;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      }
+
+      .content-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 25px;
+        margin-bottom: 25px;
+      }
+
+      .card {
+        background: white;
+        border-radius: 15px;
+        padding: 30px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+      }
+
+      h1,
+      h2 {
+        color: #0277bd;
+        margin-bottom: 15px;
+      }
+
+      h3 {
+        color: #039be5;
+        margin-top: 20px;
+        margin-bottom: 10px;
+      }
+
+      p,
+      li {
+        color: #444;
+        line-height: 1.8;
+        margin-bottom: 12px;
+      }
+
+      ul,
+      ol {
+        margin-left: 25px;
+      }
+
+      .formula-box {
+        background: #f4faff;
+        border-left: 5px solid #03a9f4;
+        padding: 18px;
+        margin: 18px 0;
+        border-radius: 6px;
+      }
+
+      .upload-section {
+        background: white;
+        margin-top: 30px;
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+      }
+      input[type="file"] {
+        display: none;
+      }
+
+      img {
+        width: 100%;
+        border-radius: 10px;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+      }
+      .upload-section {
+        background: white;
+        border-radius: 15px;
+        padding: 30px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      }
+
+      .upload-section h2 {
+        color: #03a9f4;
+        margin-bottom: 20px;
+      }
+
+      .file-input-wrapper {
+        position: relative;
+        display: inline-block;
+        width: 100%;
+        margin-bottom: 20px;
+      }
+
+      .file-input-wrapper input[type="file"] {
+        position: absolute;
+        opacity: 0;
+        width: 100%;
+        height: 100%;
+        cursor: pointer;
+      }
+
+      .file-input-label {
+        display: block;
+        padding: 40px;
+        background: #f8f9fa;
+        border: 3px dashed #03a9f4;
+        border-radius: 10px;
+        text-align: center;
+        cursor: pointer;
+        transition: background 0.3s;
+      }
+
+      .file-input-label:hover {
+        background: #e9ecef;
+      }
+
+      .process-btn {
+        width: 100%;
+        padding: 15px;
+        background: linear-gradient(135deg, #667eea 0%, #03a9f4 100%);
+        color: white;
+        border: none;
+        border-radius: 25px;
+        font-size: 18px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: opacity 0.3s;
+      }
+
+      .process-btn:hover {
+        opacity: 0.9;
+      }
+
+      .results {
+        display: none;
+        grid-template-columns: 1fr 1fr;
+        gap: 25px;
+        margin-top: 25px;
+      }
+
+      .results.show {
+        display: grid;
+      }
+
+      .result-img {
+        width: 100%;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+      }
+
+      .loading {
+        display: none;
+        text-align: center;
+        padding: 20px;
+        color: #03a9f4;
+        font-size: 18px;
+      }
+
+      .loading.show {
+        display: block;
+      }
+
+      @media (max-width: 968px) {
+        .content-grid,
+        .results {
+          grid-template-columns: 1fr;
+        }
+      }
+      @media (max-width: 480px) {
+        body {
+          padding: 10px;
+        }
+        .back-btn {
+          padding: 8px 16px;
+          font-size: 14px;
+        }
+        h1 {
+          font-size: 1.6em;
+        }
+        h2 {
+          font-size: 1.3em;
+        }
+        h3 {
+          font-size: 1.1em;
+        }
+        .card {
+          padding: 15px;
+        }
+        .process-btn {
+          font-size: 15px;
+          padding: 10px;
+        }
+        .file-input-label {
+          padding: 20px;
+          font-size: 14px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <a href="/" class="back-btn">← Back to Home</a>
+      <div class="content-grid">
+        <div class="card">
+          <h1>Region Growing Segmentation</h1>
+
+          <h2>Overview</h2>
+          <p>
+            Region growing is a bottom-up segmentation technique that starts
+            with seed points and iteratively adds neighboring pixels with
+            similar properties. It groups pixels into regions based on
+            predefined similarity criteria, creating homogeneous segments
+            representing distinct objects or areas.
+          </p>
+
+          <h2>Mathematical Foundation</h2>
+
+          <h3>1. Similarity Predicate</h3>
+          <div class="formula-box">$$P(R \cup \{p\}) = \text{TRUE}$$</div>
+          <p>P is a logical predicate (similarity criterion).</p>
+
+          <h3>2. Homogeneity Criterion</h3>
+          <div class="formula-box">$$|I(p) - \mu_R| < T$$</div>
+          <p>Where:</p>
+          <ul>
+            <li><strong>I(p)</strong> = intensity/color of pixel p</li>
+            <li>
+              <strong>μ<sub>R</sub></strong> = mean intensity of region R
+            </li>
+            <li><strong>T</strong> = threshold for similarity</li>
+          </ul>
+
+          <h3>3. Color Distance in LAB Space</h3>
+          <div class="formula-box">
+            $$\Delta E = \sqrt{(L_p - L_s)^2 + (a_p - a_s)^2 + (b_p - b_s)^2}$$
+          </div>
+          <p>(L, a, b) are LAB color components; p = pixel, s = seed.</p>
+
+          <h3>4. Region Mean Update</h3>
+          <div class="formula-box">
+            $$\mu_R^{new} = \frac{n \cdot \mu_R^{old} + I(p)}{n + 1}$$
+          </div>
+          <p>n = current number of pixels in region R.</p>
+
+          <h3>5. Connectivity</h3>
+          <div class="formula-box">
+            $$N_4(x,y) = \{(x\pm1, y), (x, y\pm1)\}$$
+          </div>
+          <div class="formula-box">
+            $$N_8(x,y) = N_4(x,y) \cup \{(x\pm1, y\pm1)\}$$
+          </div>
+
+          <h3>6. Stopping Criterion</h3>
+          <div class="formula-box">
+            $$\forall p \in \text{boundary}(R): |I(p) - \mu_R| \geq T$$
+          </div>
+
+          <h3>7. Multi-Seed Growing</h3>
+          <div class="formula-box">
+            $$R_i = \{p : i = \arg\min_j \Delta E(p, seed_j)\}$$
+          </div>
+        </div>
+
+        <!-- Workflow & Steps -->
+        <div class="card">
+          <h2>Algorithm Steps</h2>
+          <ol>
+            <li>
+              Seed Selection: Choose initial seed points (manual or automatic)
+            </li>
+            <li>Initialize: Create empty regions and mark seeds</li>
+            <li>Queue Neighbors: Add neighbors of seed to processing queue</li>
+            <li>
+              Similarity Check: Test if neighbor meets homogeneity criterion
+            </li>
+            <li>
+              Add to Region: If similar, add pixel and queue its neighbors
+            </li>
+            <li>Update Statistics: Recalculate region mean/variance</li>
+            <li>Repeat: Continue until queue is empty</li>
+            <li>Post-process: Merge small regions or fill holes</li>
+          </ol>
+        </div>
+      </div>
+      <div class="upload-section">
+        <h2>Try Region Growing</h2>
+        <form id="uploadForm" enctype="multipart/form-data">
+          <div class="file-input-wrapper">
+            <input
+              type="file"
+              id="imageInput"
+              name="image"
+              accept="image/*"
+              required
+            />
+            <label for="imageInput" class="file-input-label">
+              <p style="font-size: 18px; color: #03a9f4">
+                Click to select an image
+              </p>
+              <p id="fileName" style="color: #999; margin-top: 10px">
+                No file selected
+              </p>
+            </label>
+          </div>
+
+          <button type="submit" class="process-btn">Process Image</button>
+        </form>
+
+        <div class="loading" id="loading">
+          <p>Processing... Please wait</p>
+        </div>
+
+        <div class="results" id="results">
+          <div class="card">
+            <h3>Original Image</h3>
+            <img id="originalImg" class="result-img" alt="Original" />
+          </div>
+          <div class="card">
+            <h3>Region Growing Result</h3>
+            <img id="resultImg" class="result-img" alt="Result" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        renderMathInElement(document.body, {
+          delimiters: [
+            { left: "$$", right: "$$", display: true },
+            { left: "$", right: "$", display: false },
+          ],
+        });
+      });
+
+      document
+        .getElementById("imageInput")
+        .addEventListener("change", function (e) {
+          const fileName = e.target.files[0]?.name || "No file selected";
+          document.getElementById("fileName").textContent = fileName;
+        });
+
+      document
+        .getElementById("uploadForm")
+        .addEventListener("submit", async function (e) {
+          e.preventDefault();
+
+          const formData = new FormData();
+          formData.append(
+            "image",
+            document.getElementById("imageInput").files[0],
+          );
+          formData.append("method", "region-growing");
+
+          document.getElementById("loading").classList.add("show");
+          document.getElementById("results").classList.remove("show");
+
+          try {
+            const response = await fetch("/process", {
+              method: "POST",
+              body: formData,
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+              document.getElementById("originalImg").src = data.input_image;
+              document.getElementById("resultImg").src = data.result_image;
+              document.getElementById("results").classList.add("show");
+            } else {
+              alert("Error: " + data.error);
+            }
+          } catch (error) {
+            alert("Error processing image: " + error.message);
+          } finally {
+            document.getElementById("loading").classList.remove("show");
+          }
+        });
+    </script>
+  </body>
+</html>

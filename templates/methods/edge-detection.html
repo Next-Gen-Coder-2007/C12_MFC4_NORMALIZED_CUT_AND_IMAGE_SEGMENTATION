@@ -1,0 +1,448 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Edge Detection Segmentation</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.15.3/katex.min.css"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.15.3/katex.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.15.3/contrib/auto-render.min.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+        min-height: 100vh;
+        padding: 20px;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+
+      .back-btn {
+        display: inline-block;
+        margin-bottom: 20px;
+        padding: 10px 22px;
+        background: white;
+        color: #0288d1;
+        border-radius: 25px;
+        text-decoration: none;
+        font-weight: 600;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      }
+
+      .content-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 25px;
+        margin-bottom: 25px;
+      }
+
+      .card {
+        background: white;
+        border-radius: 15px;
+        padding: 30px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+      }
+
+      h1,
+      h2 {
+        color: #0277bd;
+        margin-bottom: 15px;
+      }
+
+      h3 {
+        color: #039be5;
+        margin-top: 20px;
+        margin-bottom: 10px;
+      }
+
+      p,
+      li {
+        color: #444;
+        line-height: 1.8;
+        margin-bottom: 12px;
+      }
+
+      ul,
+      ol {
+        margin-left: 25px;
+      }
+
+      .formula-box {
+        background: #f4faff;
+        border-left: 5px solid #03a9f4;
+        padding: 18px;
+        margin: 18px 0;
+        border-radius: 6px;
+      }
+
+      .upload-section {
+        background: white;
+        margin-top: 30px;
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+      }
+
+      .file-input-label {
+        display: block;
+        padding: 35px;
+        border: 3px dashed #03a9f4;
+        text-align: center;
+        border-radius: 10px;
+        cursor: pointer;
+        margin-bottom: 20px;
+        background: #f8fcff;
+      }
+
+      input[type="file"] {
+        display: none;
+      }
+
+      .process-btn {
+        width: 100%;
+        padding: 15px;
+        background: linear-gradient(135deg, #03a9f4, #0288d1);
+        color: white;
+        border: none;
+        border-radius: 30px;
+        font-size: 18px;
+        font-weight: 600;
+        cursor: pointer;
+      }
+
+      .results {
+        display: none;
+        margin-top: 25px;
+        grid-template-columns: 1fr 1fr;
+        gap: 25px;
+      }
+
+      .results.show {
+        display: grid;
+      }
+
+      img {
+        width: 100%;
+        border-radius: 10px;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+      }
+
+      .param-group {
+        margin-bottom: 20px;
+      }
+
+      .param-group label {
+        display: block;
+        color: #0288d1;
+        font-weight: 600;
+        margin-bottom: 8px;
+      }
+
+      .param-group input {
+        width: 100%;
+        padding: 10px;
+        border: 2px solid #e0e0e0;
+        border-radius: 5px;
+        font-size: 16px;
+      }
+
+      .process-btn {
+        width: 100%;
+        padding: 15px;
+        background: linear-gradient(135deg, #667eea 0%, #0288d1 100%);
+        color: white;
+        border: none;
+        border-radius: 25px;
+        font-size: 18px;
+        font-weight: 600;
+
+        cursor: pointer;
+        transition: opacity 0.3s;
+      }
+
+      .process-btn:hover {
+        opacity: 0.9;
+      }
+
+      .results.show {
+        display: grid;
+      }
+
+      .loading {
+        display: none;
+        text-align: center;
+        padding: 20px;
+        color: #667eea;
+        font-size: 18px;
+      }
+
+      .loading.show {
+        display: block;
+      }
+
+      @media (max-width: 968px) {
+        .content-grid,
+        .results {
+          grid-template-columns: 1fr;
+        }
+      }
+      @media (max-width: 480px) {
+        body {
+          padding: 10px;
+        }
+        .back-btn {
+          padding: 8px 16px;
+          font-size: 14px;
+        }
+        h1 {
+          font-size: 1.6em;
+        }
+        h2 {
+          font-size: 1.3em;
+        }
+        h3 {
+          font-size: 1.1em;
+        }
+        .card {
+          padding: 15px;
+        }
+        .process-btn {
+          font-size: 15px;
+          padding: 10px;
+        }
+        .file-input-label {
+          padding: 20px;
+          font-size: 14px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <a href="/" class="back-btn">← Back to Home</a>
+
+      <div class="content-grid">
+        <div class="card">
+          <h1>Edge Detection Segmentation</h1>
+
+          <h2>Overview</h2>
+          <p>
+            Edge detection identifies boundaries in images where intensity
+            changes sharply. The Canny edge detector is considered optimal,
+            using gradient analysis, non-maximum suppression, and hysteresis
+            thresholding to find accurate edges with minimal false positives.
+          </p>
+
+          <h2>Mathematical Foundation</h2>
+
+          <h3>1. Gaussian Smoothing</h3>
+          <div class="formula-box">
+            $$G(x,y) = \frac{1}{2\pi\sigma^2} e^{-\frac{x^2+y^2}{2\sigma^2}}$$
+            $$I_{smooth} = G(x,y) * I(x,y)$$
+          </div>
+          <p>* denotes convolution, σ = standard deviation.</p>
+
+          <h3>2. Gradient Computation</h3>
+          <div class="formula-box">
+            $$G_x = \begin{bmatrix} -1 & 0 & 1 \\ -2 & 0 & 2 \\ -1 & 0 & 1
+            \end{bmatrix} * I,\quad G_y = \begin{bmatrix} -1 & -2 & -1 \\ 0 & 0
+            & 0 \\ 1 & 2 & 1 \end{bmatrix} * I$$
+          </div>
+
+          <h3>3. Gradient Magnitude & Direction</h3>
+          <div class="formula-box">
+            $$G = \sqrt{G_x^2 + G_y^2},\quad \theta =
+            \arctan\left(\frac{G_y}{G_x}\right)$$
+          </div>
+
+          <h3>4. Non-Maximum Suppression</h3>
+          <div class="formula-box">
+            $$E(x,y) = \begin{cases} G(x,y) & \text{if } G(x,y) \ge
+            G_{neighbors} \\ 0 & \text{otherwise} \end{cases}$$
+          </div>
+
+          <h3>5. Double Thresholding</h3>
+          <div class="formula-box">
+            $$E_{classified}(x,y) = \begin{cases} \text{strong} & E \ge T_{high}
+            \\ \text{weak} & T_{low} \le E < T_{high} \\ \text{suppressed} & E <
+            T_{low} \end{cases}$$
+          </div>
+
+          <h3>6. Edge Tracking by Hysteresis</h3>
+          <div class="formula-box">
+            $$\text{Final Edge} = \text{Strong Edges} \cup \{\text{Weak edges
+            connected to strong edges}\}$$
+          </div>
+
+          <h3>7. Laplacian of Gaussian (LoG)</h3>
+          <div class="formula-box">
+            $$\nabla^2 G = \frac{\partial^2 G}{\partial x^2} + \frac{\partial^2
+            G}{\partial y^2}$$ $$LoG = \nabla^2(G * I)$$
+          </div>
+          <p>Zero-crossings in LoG indicate edges.</p>
+        </div>
+
+        <div class="card">
+          <h2>Canny Algorithm Steps</h2>
+          <ol>
+            <li>Noise Reduction: Apply Gaussian blur (σ ≈ 1.4)</li>
+            <li>Gradient Calculation: Compute Gx and Gy using Sobel</li>
+            <li>Magnitude & Direction: Find gradient strength & angle</li>
+            <li>Non-Max Suppression: Thin edges to 1-pixel width</li>
+            <li>Double Threshold: Classify edges (T_low, T_high)</li>
+            <li>Hysteresis: Track & connect edge fragments</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="upload-section">
+        <h2>Try Edge Detection</h2>
+        <form id="uploadForm" enctype="multipart/form-data">
+          <div class="file-input-wrapper">
+            <input
+              type="file"
+              id="imageInput"
+              name="image"
+              accept="image/*"
+              required
+            />
+            <label for="imageInput" class="file-input-label">
+              <p style="font-size: 18px; color: #0288d1">
+                Click to select an image
+              </p>
+              <p id="fileName" style="color: #999; margin-top: 10px">
+                No file selected
+              </p>
+            </label>
+          </div>
+
+          <div class="param-group">
+            <label for="lowThreshold"
+              >Low Threshold: <span id="lowDisplay">50</span></label
+            >
+            <input
+              type="range"
+              id="lowThreshold"
+              name="low_threshold"
+              min="10"
+              max="150"
+              value="50"
+              oninput="
+                document.getElementById('lowDisplay').textContent = this.value
+              "
+            />
+          </div>
+
+          <div class="param-group">
+            <label for="highThreshold"
+              >High Threshold: <span id="highDisplay">150</span></label
+            >
+            <input
+              type="range"
+              id="highThreshold"
+              name="high_threshold"
+              min="50"
+              max="300"
+              value="150"
+              oninput="
+                document.getElementById('highDisplay').textContent = this.value
+              "
+            />
+          </div>
+
+          <button type="submit" class="process-btn">Process Image</button>
+        </form>
+
+        <div class="loading" id="loading">
+          <p>Processing... Please wait</p>
+        </div>
+
+        <div class="results" id="results">
+          <div class="card">
+            <h3>Original Image</h3>
+            <img id="originalImg" class="result-img" alt="Original" />
+          </div>
+          <div class="card">
+            <h3>Edge Detection Result</h3>
+            <img id="resultImg" class="result-img" alt="Result" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        renderMathInElement(document.body, {
+          delimiters: [
+            { left: "$$", right: "$$", display: true },
+            { left: "$", right: "$", display: false },
+          ],
+        });
+      });
+
+      document
+        .getElementById("imageInput")
+        .addEventListener("change", function (e) {
+          const fileName = e.target.files[0]?.name || "No file selected";
+          document.getElementById("fileName").textContent = fileName;
+        });
+
+      document
+        .getElementById("uploadForm")
+        .addEventListener("submit", async function (e) {
+          e.preventDefault();
+
+          const formData = new FormData();
+          formData.append(
+            "image",
+            document.getElementById("imageInput").files[0],
+          );
+          formData.append("method", "edge-detection");
+          formData.append(
+            "low_threshold",
+            document.getElementById("lowThreshold").value,
+          );
+          formData.append(
+            "high_threshold",
+            document.getElementById("highThreshold").value,
+          );
+
+          document.getElementById("loading").classList.add("show");
+          document.getElementById("results").classList.remove("show");
+
+          try {
+            const response = await fetch("/process", {
+              method: "POST",
+              body: formData,
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+              document.getElementById("originalImg").src = data.input_image;
+              document.getElementById("resultImg").src = data.result_image;
+              document.getElementById("results").classList.add("show");
+            } else {
+              alert("Error: " + data.error);
+            }
+          } catch (error) {
+            alert("Error processing image: " + error.message);
+          } finally {
+            document.getElementById("loading").classList.remove("show");
+          }
+        });
+    </script>
+  </body>
+</html>

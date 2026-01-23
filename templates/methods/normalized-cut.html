@@ -1,0 +1,421 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Normalized Cut Segmentation</title>
+
+    <!-- KaTeX -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", Arial, sans-serif;
+        background-color: #f4f9fd;
+        color: #2c3e50;
+        padding: 30px;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: auto;
+      }
+
+      .back-btn {
+        display: inline-block;
+        margin-bottom: 25px;
+        padding: 10px 22px;
+        background-color: #1e88e5;
+        color: white;
+        text-decoration: none;
+        border-radius: 6px;
+        font-weight: 600;
+      }
+
+      .back-btn:hover {
+        background-color: #1565c0;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: 1.3fr 1fr;
+        gap: 25px;
+      }
+
+      .card {
+        background: white;
+        border-radius: 8px;
+        padding: 28px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        border-left: 5px solid #1e88e5;
+      }
+
+      .card h1 {
+        color: #1e88e5;
+        margin-bottom: 20px;
+      }
+
+      .card h2 {
+        margin-top: 25px;
+        margin-bottom: 12px;
+        color: #1e88e5;
+      }
+
+      .card p {
+        line-height: 1.8;
+        margin-bottom: 15px;
+        font-size: 0.95rem;
+        color: #444;
+      }
+
+      .card ul {
+        margin-left: 22px;
+        margin-bottom: 15px;
+      }
+
+      .card li {
+        margin-bottom: 8px;
+      }
+
+      .formula {
+        background: #f1f7fd;
+        padding: 18px;
+        border-left: 4px solid #1e88e5;
+        border-radius: 6px;
+        margin: 20px 0;
+        overflow-x: auto;
+      }
+      .upload-section {
+        background: white;
+        border-radius: 16px;
+        padding: 30px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+      }
+
+      .upload-section h2 {
+        color: #2196f3;
+        margin-bottom: 20px;
+      }
+
+      .file-input-wrapper {
+        position: relative;
+        display: inline-block;
+        width: 100%;
+        margin-bottom: 20px;
+      }
+
+      .file-input-wrapper input[type="file"] {
+        position: absolute;
+        opacity: 0;
+        width: 100%;
+        height: 100%;
+        cursor: pointer;
+      }
+
+      .file-input-label {
+        display: block;
+        padding: 40px;
+        background: #f8f9fa;
+        border: 3px dashed #2196f3;
+        border-radius: 10px;
+        text-align: center;
+        cursor: pointer;
+      }
+
+      .process-btn {
+        width: 100%;
+        padding: 15px;
+        background: linear-gradient(135deg, #4facfe, #00c6ff);
+        color: white;
+        border: none;
+        border-radius: 30px;
+        font-size: 18px;
+        font-weight: 600;
+        cursor: pointer;
+      }
+
+      .process-btn:hover {
+        opacity: 0.9;
+      }
+
+      .loading {
+        display: none;
+        text-align: center;
+        margin-top: 20px;
+        color: #2196f3;
+        font-size: 18px;
+      }
+
+      .loading.show {
+        display: block;
+      }
+
+      .results {
+        display: none;
+        grid-template-columns: 1fr 1fr;
+        gap: 25px;
+        margin-top: 25px;
+      }
+
+      .results.show {
+        display: grid;
+      }
+
+      .result-img {
+        width: 100%;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.25);
+      }
+
+      @media (max-width: 900px) {
+        .grid,
+        .results {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 480px) {
+        body {
+          padding: 10px;
+        }
+        .back-btn {
+          padding: 8px 16px;
+          font-size: 14px;
+        }
+        h1 {
+          font-size: 1.6em;
+        }
+        h2 {
+          font-size: 1.3em;
+        }
+        h3 {
+          font-size: 1.1em;
+        }
+        .card {
+          padding: 15px;
+        }
+        .process-btn {
+          font-size: 15px;
+          padding: 10px;
+        }
+        .file-input-label {
+          padding: 20px;
+          font-size: 14px;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <a href="/" class="back-btn">← Back to Home</a>
+
+      <div class="grid">
+        <div class="card">
+          <h1>Normalized Cut Segmentation</h1>
+
+          <h2>1. Problem Definition</h2>
+          <p>
+            Image segmentation aims to partition an image into meaningful and
+            homogeneous regions. Normalized Cut models this problem using graph
+            theory, where segmentation is formulated as a graph partitioning
+            task.
+          </p>
+
+          <h2>2. Graph Representation</h2>
+          <p>An image is represented as an undirected weighted graph:</p>
+
+          <div class="formula">$$G = (V, E)$$</div>
+
+          <ul>
+            <li>
+              <strong>V</strong> — nodes representing pixels or superpixels
+            </li>
+            <li><strong>E</strong> — edges between neighboring nodes</li>
+            <li><strong>W(i,j)</strong> — similarity between nodes</li>
+          </ul>
+
+          <h2>3. Similarity Function</h2>
+          <p>
+            The similarity between two nodes is computed using color and spatial
+            proximity:
+          </p>
+
+          <div class="formula">
+            $$W(i,j) = \exp\left(-\frac{||F_i - F_j||^2}{\sigma_I^2}\right)
+            \cdot \exp\left(-\frac{||X_i - X_j||^2}{\sigma_X^2} \right)$$
+          </div>
+
+          <p>
+            High weights indicate strong similarity, while small weights
+            indicate weak relationships.
+          </p>
+
+          <h2>4. Minimum Cut Limitation</h2>
+          <p>A naive partition minimizes the cut value:</p>
+
+          <div class="formula">
+            $$cut(A,B) = \sum_{i \in A, j \in B} W(i,j)$$
+          </div>
+
+          <p>
+            However, minimum cut tends to isolate small regions, producing
+            trivial segmentations.
+          </p>
+
+          <h2>5. Normalized Cut Criterion</h2>
+          <p>
+            To overcome this bias, the normalized cut objective is defined as:
+          </p>
+
+          <div class="formula">
+            $$NCut(A,B) = \frac{cut(A,B)}{assoc(A,V)} +
+            \frac{cut(A,B)}{assoc(B,V)}$$
+          </div>
+
+          <p>This normalization enforces balanced partitioning of the graph.</p>
+
+          <h2>6. Matrix Formulation</h2>
+
+          <div class="formula">$$D(i,i) = \sum_j W(i,j)$$ $$L = D - W$$</div>
+
+          <p>The optimization problem becomes:</p>
+
+          <div class="formula">$$\min_x \frac{x^T (D - W)x}{x^T D x}$$</div>
+
+          <h2>7. Eigenvalue Solution</h2>
+          <p>Solving this leads to the generalized eigenvalue problem:</p>
+
+          <div class="formula">$$(D - W)x = \lambda D x$$</div>
+
+          <p>
+            The second smallest eigenvector (Fiedler vector) provides the
+            optimal bipartition.
+          </p>
+
+          <h2>8. Segmentation Decision</h2>
+
+          <div class="formula">
+            $$Label(i) = \begin{cases} A & x_i > 0 \\ B & x_i \le 0
+            \end{cases}$$
+          </div>
+
+          <p>
+            Each component of the eigenvector determines the region assignment
+            of the node.
+          </p>
+        </div>
+
+        <div class="card">
+          <h2>Algorithm Workflow</h2>
+          <ul>
+            <li>Generate superpixels using SLIC</li>
+            <li>Extract mean color and spatial coordinates</li>
+            <li>Construct adjacency graph</li>
+            <li>Compute affinity matrix W</li>
+            <li>Build degree matrix D</li>
+            <li>Solve generalized eigenvalue equation</li>
+            <li>Threshold eigenvector values</li>
+            <li>Map labels back to image pixels</li>
+          </ul>
+
+          <h2>Interpretation</h2>
+          <p>
+            Normalized Cut performs global segmentation by analyzing the entire
+            image structure. Unlike local thresholding methods, it optimizes
+            segmentation at the graph level, producing balanced and meaningful
+            regions.
+          </p>
+        </div>
+      </div>
+      <div class="upload-section">
+        <h2>Try Normalized Cut</h2>
+
+        <form id="uploadForm" enctype="multipart/form-data">
+          <div class="file-input-wrapper">
+            <input type="file" id="imageInput" accept="image/*" required />
+            <label for="imageInput" class="file-input-label">
+              Click to select an image
+              <p id="fileName" style="color: #777; margin-top: 10px">
+                No file selected
+              </p>
+            </label>
+          </div>
+
+          <button class="process-btn" type="submit">Process Image</button>
+        </form>
+
+        <div class="loading" id="loading">Processing...</div>
+
+        <div class="results" id="results">
+          <div class="card">
+            <h3>Original Image</h3>
+            <img id="originalImg" class="result-img" />
+          </div>
+          <div class="card">
+            <h3>Segmented Image</h3>
+            <img id="resultImg" class="result-img" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        renderMathInElement(document.body, {
+          delimiters: [
+            { left: "$$", right: "$$", display: true },
+            { left: "$", right: "$", display: false },
+          ],
+        });
+      });
+
+      document.getElementById("imageInput").addEventListener("change", (e) => {
+        document.getElementById("fileName").textContent =
+          e.target.files[0]?.name || "No file selected";
+      });
+
+      document
+        .getElementById("uploadForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+
+          const formData = new FormData();
+          formData.append(
+            "image",
+            document.getElementById("imageInput").files[0],
+          );
+          formData.append("method", "normalized-cut");
+
+          document.getElementById("loading").classList.add("show");
+          document.getElementById("results").classList.remove("show");
+
+          const res = await fetch("/process", {
+            method: "POST",
+            body: formData,
+          });
+
+          const data = await res.json();
+
+          if (data.success) {
+            originalImg.src = data.input_image;
+            resultImg.src = data.result_image;
+            document.getElementById("results").classList.add("show");
+          }
+
+          document.getElementById("loading").classList.remove("show");
+        });
+    </script>
+  </body>
+</html>
