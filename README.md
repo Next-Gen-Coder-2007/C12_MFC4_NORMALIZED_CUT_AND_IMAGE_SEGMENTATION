@@ -119,16 +119,16 @@ User → Web Interface → Flask Backend
 
 ## Project Structure
 
-final/  
-final/app.py  
-final/segmentation_methods.py  
-final/static/  
-final/static/uploads/  
-final/static/results/  
-final/templates/  
-final/templates/index.html  
-final/templates/history.html  
-final/templates/methods/
+- final
+  - app.py
+  - segmentation_methods.py
+  - static
+    - uploads
+    - results
+  - templates
+    - index.html
+    - history.html
+    - methods
 
 
 ---
