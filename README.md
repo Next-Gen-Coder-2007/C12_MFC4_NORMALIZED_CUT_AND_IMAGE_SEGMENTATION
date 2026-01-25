@@ -1,7 +1,7 @@
 # Image Segmentation Using Classical Algorithms  
 *(Based on IEEE Normalized Cut Framework)*
 
-## 📌 Project Overview
+## Project Overview
 This project implements and compares multiple **classical image segmentation techniques** inspired by the IEEE reference paper **“Normalized Cuts and Image Segmentation” (Document ID: 868688)**.  
 The system provides a **web-based interface** that allows users to upload images, apply different segmentation algorithms, and visualize results.
 
@@ -9,18 +9,18 @@ The project bridges **theoretical concepts from the base paper** with **practica
 
 ---
 
-## 👥 Team Members
+## Team Members
 
-| Name | Roll Number | Role |
-|----|----|----|
-| _To be filled_ | _To be filled_ | Team Lead |
-| _To be filled_ | _To be filled_ | Developer |
-| _To be filled_ | _To be filled_ | Research |
-| _To be filled_ | _To be filled_ | Testing |
+| Name | Roll Number |
+|----|----|
+| Cibikumar B | CB.SC.U4AIE24212 |
+| Naveen K | CB.SC.U4AIE24235 | 
+| Sai Kushal B| CB.SC.U4AIE24252 |
+| Subash B| CB.SC.U4AIE24254 |
 
 ---
 
-## 📄 Base / Reference Paper
+## Base / Reference Paper
 
 **Title:** Normalized Cuts and Image Segmentation  
 **Authors:** Jianbo Shi, Jitendra Malik  
@@ -36,7 +36,7 @@ The paper models image segmentation as a **graph partitioning problem**, where:
 
 ---
 
-## 🧠 What We Implemented From the Paper
+## What We Implemented From the Paper
 
 | Concept from Paper | Implementation in Project |
 |------------------|---------------------------|
@@ -51,7 +51,7 @@ Instead of operating on **individual pixels** (which is computationally expensiv
 
 ---
 
-## ⚙️ Implemented Segmentation Methods
+## Implemented Segmentation Methods
 
 ### 1. Normalized Cut Segmentation (Core Contribution)
 - Implemented using:
@@ -62,7 +62,7 @@ Instead of operating on **individual pixels** (which is computationally expensiv
 - Closely follows the methodology described in the IEEE paper
 - Produces high-quality region-based segmentation
 
-📁 Code: `segmentation_methods.py`
+ Code: `segmentation_methods.py`
 
 ---
 
@@ -92,7 +92,7 @@ Instead of operating on **individual pixels** (which is computationally expensiv
 
 ---
 
-## 🏗️ System Architecture
+## System Architecture
 
 User → Web Interface → Flask Backend
 → Image Upload
@@ -103,7 +103,7 @@ User → Web Interface → Flask Backend
 
 ---
 
-## 🧪 Technologies Used
+## Technologies Used
 
 - **Programming Language:** Python
 - **Framework:** Flask
@@ -117,23 +117,23 @@ User → Web Interface → Flask Backend
 
 ---
 
-## 📂 Project Structure
+## Project Structure
 
-final/
-│── app.py
-│── segmentation_methods.py
-│── static/
-│ ├── uploads/
-│ └── results/
-│── templates/
-│ ├── index.html
-│ ├── history.html
-│ └── methods/
+final/  
+final/app.py  
+final/segmentation_methods.py  
+final/static/  
+final/static/uploads/  
+final/static/results/  
+final/templates/  
+final/templates/index.html  
+final/templates/history.html  
+final/templates/methods/
 
 
 ---
 
-## 🔄 Current Project Status (Updates)
+## Current Project Status (Updates)
 
 - ✔ Studied and analyzed base IEEE paper
 - ✔ Implemented Normalized Cut algorithm
@@ -143,7 +143,7 @@ final/
 
 ---
 
-## ⚠️ Challenges / Issues Faced
+## Challenges / Issues Faced
 
 - Understanding spectral graph theory concepts
 - High computational cost of Normalized Cut
@@ -153,7 +153,7 @@ final/
 
 ---
 
-## 🚀 Future Plans
+## Future Plans
 
 - Optimize Normalized Cut using GPU acceleration
 - Add quantitative evaluation metrics
@@ -163,13 +163,13 @@ final/
 
 ---
 
-## ✅ Conclusion
+## Conclusion
 This project successfully demonstrates how a **theoretical IEEE research paper** can be transformed into a **functional real-world application**.  
 Normalized Cut segmentation provided the best balance between accuracy and theoretical soundness when compared with other classical methods.
 
 ---
 
-## 📚 References
+## References
 
 1. J. Shi and J. Malik, *“Normalized Cuts and Image Segmentation,”* IEEE TPAMI, 2000.
 2. OpenCV Documentation
