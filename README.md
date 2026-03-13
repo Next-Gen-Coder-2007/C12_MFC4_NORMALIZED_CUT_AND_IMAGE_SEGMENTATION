@@ -169,6 +169,51 @@ Normalized Cut segmentation provided the best balance between accuracy and theor
 
 ---
 
+
+
+# Project Update
+
+## Changes Implemented
+
+The following updates were made to improve the project quality, clarity, and experimental results.
+
+### 1. Improved Figures
+- Added clearer and higher quality figures to properly show the results.
+- Figures are now easier to understand and interpret.
+
+### 2. More Experimental Results
+- Added additional results to better evaluate the model.
+- This helps identify where the method performs well and where it does not.
+
+### 3. Proper Examples
+- Included detailed examples to explain the methodology and outputs.
+- Examples help in understanding how the system works step by step.
+
+### 4. Graph Representation
+- Added graphs to represent experimental results visually.
+- Graphs are included as images for better readability.
+
+### 5. Original Images
+- Included original sample images used in experiments.
+- This improves transparency and reproducibility of the results.
+
+### 6. Standard Dataset
+- Used a standard dataset for testing and evaluation.
+- This allows fair comparison with other approaches.
+
+### 7. Superpixel Explanation
+- Added a clear explanation of the **Superpixel** concept used in the project.
+- Explained how superpixels help in image segmentation and analysis.
+
+### 8. Simple Image Demonstrations
+- Added simple images to demonstrate how the algorithm processes data.
+- Helps readers easily understand the workflow.
+
+---
+
+## Summary
+These updates improve the clarity, experimental validation, and explanation of the project, making the work easier to understand and reproduce.
+
 ## References
 
 1. J. Shi and J. Malik, *“Normalized Cuts and Image Segmentation,”* IEEE TPAMI, 2000.
